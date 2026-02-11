@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Statistics Calculator - Advanced</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --parchment: #f4e9d8;
+            --ink: #2c1810;
+            --accent: #8b4513;
+            --gold: #d4af37;
+            --border: #a67c52;
+            --shadow: rgba(44, 24, 16, 0.3);
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, #e8d5b7 0%, #d4c5aa 100%);
+            color: var(--ink);
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 69, 19, 0.03) 2px, rgba(139, 69, 19, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(139, 69, 19, 0.03) 2px, rgba(139, 69, 19, 0.03) 4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-shadow: 2px 2px 0 var(--gold);
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--accent);
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--parchment);
+            border: 3px solid var(--border);
+            border-radius: 0;
+            padding: 2rem;
+            box-shadow: 
+                0 8px 16px var(--shadow),
+                inset 0 0 100px rgba(212, 175, 55, 0.1);
+            position: relative;
+            animation: slideUp 0.8s ease-out backwards;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid var(--gold);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+
+        .card h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2::before {
+            content: '◆';
+            color: var(--gold);
+        }
+
+        .terrain-item, .climate-item {
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .terrain-item:hover, .climate-item:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+
+        select, input[type="range"], input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            border: 2px solid var(--border);
+            background: #fff;
+            color: var(--ink);
+        }
+
+        select, input[type="number"] {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, input[type="number"]:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: linear-gradient(to right, var(--border) 0%, var(--gold) 100%);
+            border: none;
+            padding: 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--gold);
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--gold);
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .percentage-display {
+            display: inline-block;
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 1.1rem;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: var(--parchment);
+            border: 2px solid var(--gold);
+            padding: 0.75rem 1.5rem;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--gold);
+            color: var(--ink);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            width: auto;
+            margin-top: 0.5rem;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--accent);
+            color: var(--parchment);
+            border: none;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background: #5c3a1e;
+            transform: scale(1.1);
+        }
+
+        .results-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #2c1810 0%, #5c3a1e 100%);
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .results-card h2 {
+            color: var(--gold);
+            border-bottom-color: var(--parchment);
+        }
+
+        .results-card::before {
+            border-color: var(--parchment);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .result-item {
+            background: rgba(244, 233, 216, 0.1);
+            padding: 1.5rem;
+            border: 2px solid var(--gold);
+            border-radius: 0;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            background: rgba(244, 233, 216, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+        }
+
+        .result-item.warning {
+            border-color: #d32f2f;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            color: var(--parchment);
+            opacity: 0.8;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+        }
+
+        .result-value.over-limit {
+            color: #ff6b6b;
+        }
+
+        .info-box {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid var(--gold);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .warning {
+            background: rgba(255, 100, 100, 0.1);
+            border-left-color: #d32f2f;
+            color: #d32f2f;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ornament {
+            width: 60px;
+            height: 3px;
+            background: var(--gold);
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .ornament::before,
+        .ornament::after {
+            content: '◆';
+            position: absolute;
+            color: var(--gold);
+            font-size: 1.2rem;
+            top: -10px;
+        }
+
+        .ornament::before {
+            left: -20px;
+        }
+
+        .ornament::after {
+            right: -20px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .composition-display {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(139, 69, 19, 0.05);
+            border: 2px dashed var(--border);
+        }
+
+        .composition-display h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .composition-display p {
+            margin: 0.3rem 0;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Country Statistics Calculator</h1>
+            <p class="subtitle">Advanced Multi-Terrain & Multi-Climate System</p>
+            <div class="ornament"></div>
+        </header>
+
+        <div class="calculator-grid">
+            <div class="card">
+                <h2>Terrain Composition</h2>
+                <div id="terrainContainer"></div>
+                <button class="btn btn-small" onclick="addTerrain()">+ Add Terrain Type</button>
+                <div class="info-box" id="terrainWarning" style="display: none;"></div>
+                <div class="composition-display" id="terrainComposition"></div>
+            </div>
+
+            <div class="card">
+                <h2>Climate Composition</h2>
+                <div id="climateContainer"></div>
+                <button class="btn btn-small" onclick="addClimate()">+ Add Climate Zone</button>
+                <div class="info-box" id="climateWarning" style="display: none;"></div>
+                <div class="composition-display" id="climateComposition"></div>
+            </div>
+
+            <div class="card">
+                <h2>Territory Size</h2>
+                <div class="form-group">
+                    <label for="actualArea">Claimed Area (km²)</label>
+                    <input type="number" id="actualArea" min="0" step="1000" value="400000" oninput="calculate()">
+                </div>
+                <div class="info-box">
+                    Enter your desired territory size. This will be compared against the calculated maximum area based on your geographic features.
+                </div>
+                <div class="info-box" id="areaStatus" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h2>Coastline & Resources</h2>
+                <div class="form-group">
+                    <label for="coastline">Coastal Access</label>
+                    <select id="coastline" onchange="calculate()">
+                        <option value="0|0.12|0.08">Moderate (100-500km)</option>
+                        <option value="0.15|-0.12|-0.08">None (Landlocked)</option>
+                        <option value="0.05|0.05|0.03">Limited (<100km)</option>
+                        <option value="-0.10|0.20|0.12">Extensive (>500km)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="resources">Resource Endowment</label>
+                    <select id="resources" onchange="calculate()">
+                        <option value="0|0">Moderate Resources</option>
+                        <option value="-0.15|-0.08">Resource-Poor</option>
+                        <option value="-0.05|-0.03">Limited Resources</option>
+                        <option value="0.25|0.10">Resource-Rich</option>
+                        <option value="0.40|0.05">Extreme Resources</option>
+                    </select>
+                </div>
+                <div class="info-box">
+                    Coastal access enables trade while natural resources can offset geographic disadvantages.
+                </div>
+            </div>
+
+            <div class="card results-card">
+                <h2>Your Nation's Statistics</h2>
+                <div class="results-grid">
+                    <div class="result-item" id="maxAreaItem">
+                        <div class="result-label">Maximum Allowed Area</div>
+                        <div class="result-value" id="maxArea">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Claimed Area</div>
+                        <div class="result-value" id="claimedArea">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">GDP Per Capita</div>
+                        <div class="result-value" id="gdpPerCapita">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">HDI Score</div>
+                        <div class="result-value" id="hdi">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Estimated Population</div>
+                        <div class="result-value" id="population">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Total GDP</div>
+                        <div class="result-value" id="totalGDP">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Design your nation with wisdom. Balance expansion with prosperity.</p>
+            <p style="margin-top: 0.5rem; opacity: 0.7;">Percentages must total 100%. Claimed area cannot exceed maximum allowed area.</p>
+        </footer>
+    </div>
+
+    <script>
+        const BASE_AREA = 500000;
+        const BASE_GDP = 30000;
+        const BASE_HDI = 0.750;
+        const MAX_HDI = 0.950;
+        const MIN_HDI = 0.400;
+
+        const TERRAIN_DATA = {
+            'mixed': { area: 1.0, gdp: 1.0, hdi: 1.0, name: 'Mixed Terrain', density: 70 },
+            'coastal_plains': { area: 0.7, gdp: 1.4, hdi: 1.25, name: 'Coastal Plains', density: 250 },
+            'temperate_plains': { area: 0.8, gdp: 1.3, hdi: 1.20, name: 'Temperate Plains', density: 140 },
+            'river_valleys': { area: 0.75, gdp: 1.35, hdi: 1.22, name: 'River Valleys', density: 250 },
+            'highlands': { area: 1.2, gdp: 0.85, hdi: 0.95, name: 'Highlands/Hills', density: 70 },
+            'mountains': { area: 1.5, gdp: 0.7, hdi: 0.85, name: 'Mountains (Major)', density: 27 },
+            'islands_small': { area: 0.6, gdp: 1.1, hdi: 1.05, name: 'Islands (Small)', density: 325 },
+            'islands_large': { area: 0.9, gdp: 1.15, hdi: 1.10, name: 'Islands (Large)', density: 325 },
+            'tundra': { area: 2.0, gdp: 0.5, hdi: 0.70, name: 'Tundra', density: 12 },
+            'desert_arid': { area: 2.5, gdp: 0.45, hdi: 0.65, name: 'Desert (Arid)', density: 12 },
+            'desert_semi': { area: 1.8, gdp: 0.65, hdi: 0.80, name: 'Desert (Semi-Arid)', density: 12 },
+            'rainforest': { area: 1.6, gdp: 0.75, hdi: 0.85, name: 'Tropical Rainforest', density: 27 },
+            'taiga': { area: 1.7, gdp: 0.65, hdi: 0.80, name: 'Taiga/Boreal', density: 27 }
+        };
+
+        const CLIMATE_DATA = {
+            'temperate': { area: 0, gdp: 0, hdi: 0, name: 'Temperate' },
+            'mediterranean': { area: 0, gdp: 0.15, hdi: 0.10, name: 'Mediterranean' },
+            'subtropical': { area: 0.05, gdp: 0.05, hdi: 0.05, name: 'Subtropical' },
+            'tropical': { area: 0.10, gdp: -0.05, hdi: -0.03, name: 'Tropical (Wet)' },
+            'continental': { area: 0.10, gdp: 0, hdi: 0.02, name: 'Continental' },
+            'arid': { area: 0.30, gdp: -0.20, hdi: -0.12, name: 'Arid' },
+            'polar': { area: 0.50, gdp: -0.35, hdi: -0.20, name: 'Polar' }
+        };
+
+        let terrainCount = 0;
+        let climateCount = 0;
+
+        function addTerrain() {
+            terrainCount++;
+            const container = document.getElementById('terrainContainer');
+            const div = document.createElement('div');
+            div.className = 'terrain-item';
+            div.id = `terrain-${terrainCount}`;
+            div.innerHTML = `
+                <button class="remove-btn" onclick="removeTerrain(${terrainCount})">×</button>
+                <div class="form-group">
+                    <label>Terrain Type</label>
+                    <select onchange="calculate()">
+                        <option value="mixed">Mixed Terrain</option>
+                        <option value="coastal_plains">Coastal Plains</option>
+                        <option value="temperate_plains">Temperate Plains</option>
+                        <option value="river_valleys">River Valleys</option>
+                        <option value="highlands">Highlands/Hills</option>
+                        <option value="mountains">Mountains (Major)</option>
+                        <option value="islands_small">Islands (Small)</option>
+                        <option value="islands_large">Islands (Large)</option>
+                        <option value="tundra">Tundra</option>
+                        <option value="desert_arid">Desert (Arid)</option>
+                        <option value="desert_semi">Desert (Semi-Arid)</option>
+                        <option value="rainforest">Tropical Rainforest</option>
+                        <option value="taiga">Taiga/Boreal</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Percentage: <span class="percentage-display">25%</span></label>
+                    <input type="range" min="0" max="100" value="25" oninput="updatePercentage(this); calculate()">
+                </div>
+            `;
+            container.appendChild(div);
+            calculate();
+        }
+
+        function removeTerrain(id) {
+            document.getElementById(`terrain-${id}`).remove();
+            calculate();
+        }
+
+        function addClimate() {
+            climateCount++;
+            const container = document.getElementById('climateContainer');
+            const div = document.createElement('div');
+            div.className = 'climate-item';
+            div.id = `climate-${climateCount}`;
+            div.innerHTML = `
+                <button class="remove-btn" onclick="removeClimate(${climateCount})">×</button>
+                <div class="form-group">
+                    <label>Climate Zone</label>
+                    <select onchange="calculate()">
+                        <option value="temperate">Temperate</option>
+                        <option value="mediterranean">Mediterranean</option>
+                        <option value="subtropical">Subtropical</option>
+                        <option value="tropical">Tropical (Wet)</option>
+                        <option value="continental">Continental</option>
+                        <option value="arid">Arid</option>
+                        <option value="polar">Polar</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Percentage: <span class="percentage-display">25%</span></label>
+                    <input type="range" min="0" max="100" value="25" oninput="updatePercentage(this); calculate()">
+                </div>
+            `;
+            container.appendChild(div);
+            calculate();
+        }
+
+        function removeClimate(id) {
+            document.getElementById(`climate-${id}`).remove();
+            calculate();
+        }
+
+        function updatePercentage(slider) {
+            slider.previousElementSibling.querySelector('.percentage-display').textContent = slider.value + '%';
+        }
+
+        function getTerrainInputs() {
+            return Array.from(document.querySelectorAll('.terrain-item')).map(item => ({
+                type: item.querySelector('select').value,
+                percentage: parseInt(item.querySelector('input[type="range"]').value)
+            }));
+        }
+
+        function getClimateInputs() {
+            return Array.from(document.querySelectorAll('.climate-item')).map(item => ({
+                type: item.querySelector('select').value,
+                percentage: parseInt(item.querySelector('input[type="range"]').value)
+            }));
+        }
+
+        function calculate() {
+            const terrains = getTerrainInputs();
+            const climates = getClimateInputs();
+
+            const terrainTotal = terrains.reduce((sum, t) => sum + t.percentage, 0);
+            const climateTotal = climates.reduce((sum, c) => sum + c.percentage, 0);
+
+            const terrainWarning = document.getElementById('terrainWarning');
+            const climateWarning = document.getElementById('climateWarning');
+
+            if (terrainTotal !== 100) {
+                terrainWarning.textContent = `⚠ Terrain percentages total ${terrainTotal}%. Must equal 100%.`;
+                terrainWarning.className = 'info-box warning';
+                terrainWarning.style.display = 'block';
+            } else {
+                terrainWarning.style.display = 'none';
+            }
+
+            if (climateTotal !== 100) {
+                climateWarning.textContent = `⚠ Climate percentages total ${climateTotal}%. Must equal 100%.`;
+                climateWarning.className = 'info-box warning';
+                climateWarning.style.display = 'block';
+            } else {
+                climateWarning.style.display = 'none';
+            }
+
+            let terrainAreaMult = 0, terrainGdpMult = 0, terrainHdiMult = 0, weightedDensity = 0;
+            let terrainCompositionText = '<h3>Terrain Breakdown</h3>';
+            
+            terrains.forEach(t => {
+                const data = TERRAIN_DATA[t.type];
+                const weight = t.percentage / 100;
+                terrainAreaMult += data.area * weight;
+                terrainGdpMult += data.gdp * weight;
+                terrainHdiMult += data.hdi * weight;
+                weightedDensity += data.density * weight;
+                terrainCompositionText += `<p>${t.percentage}% ${data.name}</p>`;
+            });
+            document.getElementById('terrainComposition').innerHTML = terrainCompositionText;
+
+            let climateAreaMod = 0, climateGdpMod = 0, climateHdiMod = 0;
+            let climateCompositionText = '<h3>Climate Breakdown</h3>';
+            
+            climates.forEach(c => {
+                const data = CLIMATE_DATA[c.type];
+                const weight = c.percentage / 100;
+                climateAreaMod += data.area * weight;
+                climateGdpMod += data.gdp * weight;
+                climateHdiMod += data.hdi * weight;
+                climateCompositionText += `<p>${c.percentage}% ${data.name}</p>`;
+            });
+            document.getElementById('climateComposition').innerHTML = climateCompositionText;
+
+            const coastlineValue = document.getElementById('coastline').value;
+            const [coastlineArea, coastlineGDP, coastlineHDI] = coastlineValue.split('|').map(Number);
+            
+            const resourcesValue = document.getElementById('resources').value;
+            const [resourceGDP, resourceHDI] = resourcesValue.split('|').map(Number);
+
+            const actualArea = parseInt(document.getElementById('actualArea').value) || 0;
+
+            if (terrainTotal === 100 && climateTotal === 100) {
+                const maxArea = BASE_AREA * terrainAreaMult * (1 + climateAreaMod + coastlineArea);
+                const gdpPerCapita = BASE_GDP * terrainGdpMult * (1 + climateGdpMod + coastlineGDP + resourceGDP);
+                let hdi = BASE_HDI * terrainHdiMult * (1 + climateHdiMod + coastlineHDI + resourceHDI);
+                hdi = Math.max(MIN_HDI, Math.min(MAX_HDI, hdi));
+
+                const population = Math.round(actualArea * weightedDensity);
+                const totalGDP = population * gdpPerCapita;
+
+                const areaStatus = document.getElementById('areaStatus');
+                const maxAreaItem = document.getElementById('maxAreaItem');
+                const claimedAreaElement = document.getElementById('claimedArea');
+                
+                if (actualArea > maxArea) {
+                    areaStatus.textContent = `⚠ Your claimed area (${actualArea.toLocaleString()} km²) exceeds the maximum allowed (${Math.round(maxArea).toLocaleString()} km²). Reduce your territory or adjust geographic features.`;
+                    areaStatus.className = 'info-box warning';
+                    areaStatus.style.display = 'block';
+                    maxAreaItem.classList.add('warning');
+                    claimedAreaElement.classList.add('over-limit');
+                } else {
+                    areaStatus.style.display = 'none';
+                    maxAreaItem.classList.remove('warning');
+                    claimedAreaElement.classList.remove('over-limit');
+                }
+
+                document.getElementById('maxArea').textContent = `${Math.round(maxArea).toLocaleString()} km²`;
+                document.getElementById('claimedArea').textContent = `${actualArea.toLocaleString()} km²`;
+                document.getElementById('gdpPerCapita').textContent = `$${Math.round(gdpPerCapita).toLocaleString()}`;
+                document.getElementById('hdi').textContent = hdi.toFixed(3);
+                document.getElementById('population').textContent = population.toLocaleString();
+                
+                if (totalGDP >= 1e12) {
+                    document.getElementById('totalGDP').textContent = `$${(totalGDP / 1e12).toFixed(2)}T`;
+                } else if (totalGDP >= 1e9) {
+                    document.getElementById('totalGDP').textContent = `$${(totalGDP / 1e9).toFixed(2)}B`;
+                } else {
+                    document.getElementById('totalGDP').textContent = `$${(totalGDP / 1e6).toFixed(2)}M`;
+                }
+            } else {
+                document.getElementById('maxArea').textContent = '-';
+                document.getElementById('claimedArea').textContent = '-';
+                document.getElementById('gdpPerCapita').textContent = '-';
+                document.getElementById('hdi').textContent = '-';
+                document.getElementById('population').textContent = '-';
+                document.getElementById('totalGDP').textContent = '-';
+            }
+        }
+
+        addTerrain();
+        addTerrain();
+        addClimate();
+        addClimate();
+
+        setTimeout(() => {
+            const terrainItems = document.querySelectorAll('.terrain-item');
+            if (terrainItems[0]) {
+                terrainItems[0].querySelector('select').value = 'temperate_plains';
+                terrainItems[0].querySelector('input[type="range"]').value = 60;
+                updatePercentage(terrainItems[0].querySelector('input[type="range"]'));
+            }
+            if (terrainItems[1]) {
+                terrainItems[1].querySelector('select').value = 'highlands';
+                terrainItems[1].querySelector('input[type="range"]').value = 40;
+                updatePercentage(terrainItems[1].querySelector('input[type="range"]'));
+            }
+
+            const climateItems = document.querySelectorAll('.climate-item');
+            if (climateItems[0]) {
+                climateItems[0].querySelector('select').value = 'temperate';
+                climateItems[0].querySelector('input[type="range"]').value = 70;
+                updatePercentage(climateItems[0].querySelector('input[type="range"]'));
+            }
+            if (climateItems[1]) {
+                climateItems[1].querySelector('select').value = 'continental';
+                climateItems[1].querySelector('input[type="range"]').value = 30;
+                updatePercentage(climateItems[1].querySelector('input[type="range"]'));
+            }
+
+            calculate();
+        }, 100);
+    </script>
+</body>
+</html>
